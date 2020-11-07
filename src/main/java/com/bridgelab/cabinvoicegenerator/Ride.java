@@ -2,10 +2,10 @@ package com.bridgelab.cabinvoicegenerator;
 
 public class Ride {
 
-    public int distance;
+    public double distance;
     public int time;
 
-    public Ride(int distance, int time) {
+    public Ride(double distance, int time) {
         this.distance = distance;
         this.time = time;
     }
