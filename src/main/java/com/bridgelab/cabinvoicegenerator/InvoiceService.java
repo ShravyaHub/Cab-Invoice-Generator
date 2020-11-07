@@ -11,11 +11,11 @@ public class InvoiceService {
         this.rideRepository = rideRepository;
     }
 
-    public InvoiceSummary getInvoice(int userID) {
+    public InvoiceSummary getInvoice(int userID, boolean normalRide) {
         InvoiceSummary invoiceSummary = null;
         for (RideRepository userRides : rideRepository) {
             if (userRides.userID == userID) {
-                invoiceSummary = new CabInvoiceGenerator().getInvoiceSummary(userRides.rides);
+                invoiceSummary = new CabInvoiceGenerator().getInvoiceSummary(userRides.rides, normalRide);
             }
         }
         return invoiceSummary;
