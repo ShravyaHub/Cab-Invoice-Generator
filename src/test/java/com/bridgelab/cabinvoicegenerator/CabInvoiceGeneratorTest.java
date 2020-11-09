@@ -1,53 +1,61 @@
 package com.bridgelab.cabinvoicegenerator;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-
 import java.util.Arrays;
 
 public class CabInvoiceGeneratorTest {
+
+    CabInvoiceGenerator invoiceGenerator;
+    InvoiceService invoiceService;
+
+    @Before
+    public void initialize() {
+        invoiceGenerator = new CabInvoiceGenerator();
+        invoiceService = new InvoiceService();
+    }
 
     @Test
     public void givenDistanceAndTimeForNormalRide_IfFareGreaterThanMinimumFare_ShouldReturnTotalFare() {
         double distance = 10;
         int time = 12;
-        Assert.assertEquals(112, new CabInvoiceGenerator().calculateFare(distance, time, true), 0.0);
+        Assert.assertEquals(112, new CabInvoiceGenerator().calculateNormalFare(distance, time), 0.0);
     }
 
     @Test
     public void givenDistanceAndTimeForPremiumRide_IfFareLessThanMinimumFare_ShouldReturnMinimumFare() {
         double distance = 0.1;
         int time = 1;
-        Assert.assertEquals(20, new CabInvoiceGenerator().calculateFare(distance, time, false), 0.0);
+        Assert.assertEquals(20, new CabInvoiceGenerator().calculatePremiumRideFare(distance, time), 0.0);
     }
 
     @Test
     public void givenMultipleRidesForNormalRides_ShouldReturnTotalFare() {
-        Ride[] rides = { new Ride(10, 15), new Ride(3, 8), new Ride(4, 10) };
-        Assert.assertEquals(203, new CabInvoiceGenerator().calculateTotalAggregateFare(rides, true), 0.0);
+        Ride[] rides = { new Ride(10, 15, CabRide.NORMAL), new Ride(3, 8, CabRide.NORMAL), new Ride(4, 10, CabRide.NORMAL) };
+        Assert.assertEquals(203, new CabInvoiceGenerator().calculateTotalAggregateFare(Arrays.asList(rides)), 0.0);
     }
 
     @Test
-    public void givenMultipleRidesForPremiumRides_ShouldReturnInvoiceSummary() {
-        Ride[] rides = {
-                new Ride(7, 15),
-                new Ride(2.3, 8),
-                new Ride(0.8, 4)
-        };
-        Assert.assertEquals(new InvoiceSummary(3,  205.5), new CabInvoiceGenerator().getInvoiceSummary(rides, false));
+    public void givenMultipleRidesForPremiumRides_ShouldReturnInvoiceSummary() throws InvoiceException {
+        Ride[] rides = { new Ride(7, 15, CabRide.PREMIUM), new Ride(2.3, 8, CabRide.PREMIUM), new Ride(0.8, 4, CabRide.PREMIUM) };
+        try {
+            Assert.assertEquals(new InvoiceSummary(3,  205.5), new InvoiceService().getInvoiceSummary(Arrays.asList(rides)));
+        } catch (InvoiceException invoiceException) {
+            throw new InvoiceException("Invalid Ride Type", InvoiceException.ExceptionType.INVALID_RIDE_TYPE);
+        }
     }
 
     @Test
-    public void givenUserIDForNormalRide_ShouldReturnUserInvoiceSummary() {
-        RideRepository[] repositoryList = {
-                new RideRepository(1, new Ride[]{new Ride(4, 8), new Ride(1.1, 3), new Ride(10, 16)}),
-                new RideRepository(2, new Ride[]{new Ride(2, 4), new Ride(2.3, 5), new Ride(5, 9), new Ride(11, 18)}),
-                new RideRepository(3, new Ride[]{new Ride(8.5, 15), new Ride(6, 10), new Ride(0.8, 3)})
-        };
-        InvoiceService invoiceService = new InvoiceService(Arrays.asList(repositoryList));
-        InvoiceSummary invoiceSummary = invoiceService.getInvoice(2, true);
-        InvoiceSummary expectedInvoiceSummary = new InvoiceSummary(4, 239);
-        Assert.assertEquals(expectedInvoiceSummary, invoiceSummary);
+    public void givenUserIDForNormalRide_ShouldReturnUserInvoiceSummary() throws InvoiceException {
+        invoiceService.addRide(101, Arrays.asList(new Ride(5, 10, CabRide.NORMAL), new Ride(0.3, 1, CabRide.NORMAL), new Ride(1, 5, CabRide.NORMAL)));
+        invoiceService.addRide(102, Arrays.asList(new Ride(3, 20, CabRide.NORMAL), new Ride(3, 2, CabRide.NORMAL), new Ride(3.8, 5, CabRide.NORMAL)));
+        invoiceService.addRide(103, Arrays.asList(new Ride(6, 5, CabRide.NORMAL), new Ride(1.7, 4, CabRide.NORMAL), new Ride(8.9, 9, CabRide.NORMAL)));
+        try {
+            Assert.assertEquals(new InvoiceSummary(3, 80), invoiceService.getInvoice(101));
+        } catch (InvoiceException invoiceException) {
+            throw new InvoiceException("Invalid User ID", InvoiceException.ExceptionType.INVALID_USER_ID);
+        }
     }
 
 }

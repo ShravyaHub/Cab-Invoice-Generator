@@ -1,24 +1,30 @@
 package com.bridgelab.cabinvoicegenerator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class InvoiceService {
 
-    private List<RideRepository> rideRepository;
+    public RideRepository rideRepository;
 
-    public InvoiceService(List<RideRepository> rideRepository) {
-        this.rideRepository = rideRepository;
+    public InvoiceService() {
+        this.rideRepository = new RideRepository();
     }
 
-    public InvoiceSummary getInvoice(int userID, boolean normalRide) {
-        InvoiceSummary invoiceSummary = null;
-        for (RideRepository userRides : rideRepository) {
-            if (userRides.userID == userID) {
-                invoiceSummary = new CabInvoiceGenerator().getInvoiceSummary(userRides.rides, normalRide);
-            }
+    public InvoiceSummary getInvoice(int userID) throws InvoiceException {
+        if(!rideRepository.getRideRepositoryMap().containsKey(userID))
+            throw new InvoiceException("Invalid user id", InvoiceException.ExceptionType.INVALID_USER_ID);
+        else {
+            return getInvoiceSummary(rideRepository.getUserRideList(userID));
         }
-        return invoiceSummary;
+    }
+
+    public InvoiceSummary getInvoiceSummary(List<Ride> rides) throws InvoiceException {
+        double totalFare = new CabInvoiceGenerator().calculateTotalAggregateFare(rides);
+        return new InvoiceSummary(rides.size(), totalFare);
+    }
+
+    public void addRide(int userID, List<Ride> rides) {
+        rideRepository.addRide(userID, rides);
     }
 
 }

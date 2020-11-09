@@ -13,12 +13,12 @@ public class InvoiceSummary {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        InvoiceSummary other = (InvoiceSummary) obj;
-        if(other.numberOfRides == this.numberOfRides && this.totalFare == other.totalFare && this.averageFare == other.averageFare) return true;
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null) return false;
+        if (getClass() != object.getClass()) return false;
+        InvoiceSummary invoiceSummary = (InvoiceSummary) object;
+        if(invoiceSummary.numberOfRides == this.numberOfRides && this.totalFare == invoiceSummary.totalFare && this.averageFare == invoiceSummary.averageFare) return true;
         else return false;
     }
 
